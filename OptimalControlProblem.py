@@ -1,8 +1,8 @@
 from Libs import *
-
+from IntegralSolver import *
 
 C = 1 / math.sqrt(2)
-
+#C = 1
 
 def IsInsideParabolaG2(x, y):
     p = pow(y, 2) - (2 * C) * x
@@ -140,6 +140,66 @@ def SolveIntegralTrapzMethod(x, t):
 
     return result
 
+def IntergralFromZeroToTau(tau, T, pos, x_0, y_0):
+
+    def x_above_func(t):
+        return (-C * t**2 / 2 + y_0 * t + x_0)**2
+    def x_below_func(t):
+        return (C * t**2 / 2 + y_0 * t + x_0)**2
+
+    if pos == "Above":
+        result, err = scipy.integrate.quad(lambda t: x_above_func(t), 0, tau)
+    if pos == "Below":
+        result, err = scipy.integrate.quad(lambda t: x_below_func(t), 0, tau)
+
+    return result
+
+def IntergralFromTauToT(tau, T, pos, x_0, y_0):
+
+    def x_above_func(t):
+        val = (C / 2) * (t**2 - tau**2) + C*T*(tau - t) + (y_0 - C*tau)**2 / (2*C)
+        return val**2
+    def x_below_func(t):
+        e = 2*math.sqrt(y_0**2 / 2 - C*x_0) - y_0
+        val = -C*t**2 / 2 + e*t + y_0*tau + x_0 + C*tau**2 - e*tau
+        return val**2
+
+    if pos == "Above":
+        result, err = scipy.integrate.quad(lambda t: x_above_func(t), tau, T)
+    if pos == "Below":
+        result, err = scipy.integrate.quad(lambda t: x_below_func(t), tau, T)
+
+    return result
+
+
+def SolveIntergralOCPScipyQuadMethod(tau, T, pos, x_0, y_0):
+
+    I1 = IntergralFromZeroToTau(tau, T, pos, x_0, y_0)
+    I2 = IntergralFromTauToT(tau, T, pos, x_0, y_0)
+
+    return (I1 + I2)
+
+def PlotData(t1, t2, x1, y1, x2, y2):
+
+    fig, axs = plt.subplots(2, 2)
+    axs[0, 0].plot(t1, x1)
+    axs[0, 0].set_title('X1')
+    axs[0, 1].plot(t1, y1, 'tab:orange')
+    axs[0, 1].set_title('Y1')
+    axs[1, 0].plot(t2, x2, 'tab:green')
+    axs[1, 0].set_title('X2')
+    axs[1, 1].plot(t2, y2, 'tab:red')
+    axs[1, 1].set_title('Y2')
+
+    for ax in axs.flat:
+        ax.set(xlabel='Time', ylabel='Value')
+
+    for ax in axs.flat:
+        ax.label_outer()
+
+    plt.grid(True)
+    plt.show()
+
 def SolveOCP(x_0_1, y_0_1, x_0_2, y_0_2):
 
     pos1 = GetPositionRelativeToCurve(x_0_1, y_0_1)
@@ -151,18 +211,19 @@ def SolveOCP(x_0_1, y_0_1, x_0_2, y_0_2):
     x1, y1, t1 = CalculateTrajectory(x_0_1, y_0_1, tau1, T1, pos1)
     x2, y2, t2 = CalculateTrajectory(x_0_2, y_0_2, tau2, T2, pos2)
 
-    l1 = [1, 2, 3, 4]
-    l2 = [1, 2, 3, 4, 5, 6]
+    #PlotData(t1, t2, x1, y1, x2, y2)
 
-    l1, l2 = EqualizeListSizes(l1, l2)
+    x3 = [1, 2, 3, 4, 5]
 
-    res1 = SolveIntegralTrapzMethod(x1, t1)
-    res2 = SolveIntegralTrapzMethod(x2, t2)
-    result = res1 + res2
+    I1 = SolveIntegralTrapzMethod1D(x1, T1)
+    I2 = SolveIntegralTrapzMethod1D(x2, T2)
+    I3 = SolveIntegralTrapzMethod1D(x3, 1)
 
-    print("================================")
-    print("================================")
+    I = I1 + I2
+
     print("Times for Optimal Control Problem:")
     print("T1 = {} \nT2 = {}".format(T1, T2))
-    print("Integral Result for Optimal Control Problem(Trapz) = {}".format(result))
+    print("Integral Result for Optimal Control Problem(Quad) = {}".format(I))
+
+    return T1, T2, I
     
