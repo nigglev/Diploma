@@ -39,6 +39,7 @@ def PlotData(val_1, val_2, max_num_frames):
         return ln,
 
     def update(real_frame):
+        Q = ax.quiver(0, 0, x[real_frame], y[real_frame], pivot='mid', color='r', units='inches')
         xdata.append(x[real_frame])
         ydata.append(y[real_frame])
         ln.set_data(xdata, ydata)
@@ -47,6 +48,33 @@ def PlotData(val_1, val_2, max_num_frames):
     ani = FuncAnimation(fig, update, frames=max_num_frames,
                         init_func=init, blit=True)
     plt.show()
+
+    
+
+def RotateInitialPoints(x_1_0, y_1_0, x_2_0, y_2_0, angle_list):
+
+    x_1_0_rotated_list = list()
+    x_2_0_rotated_list = list()
+
+    y_1_0_rotated_list = list()
+    y_2_0_rotated_list = list()
+
+
+    for angle in angle_list:
+
+        x_1_0_rotated = x_1_0 * math.cos(angle) - x_2_0 * math.sin(angle)
+        x_2_0_rotated = x_1_0 * math.sin(angle) + x_2_0 * math.cos(angle)
+        x_1_0_rotated_list.append(x_1_0_rotated)
+        x_2_0_rotated_list.append(x_2_0_rotated)
+
+        y_1_0_rotated = y_1_0 * math.cos(angle) - y_2_0 * math.sin(angle)
+        y_2_0_rotated = y_1_0 * math.sin(angle) + y_2_0 * math.cos(angle)
+        y_1_0_rotated_list.append(y_1_0_rotated)
+        y_2_0_rotated_list.append(y_2_0_rotated)   
+    
+
+    return x_1_0_rotated_list, y_1_0_rotated_list, x_2_0_rotated_list, y_2_0_rotated_list
+
 
 
 def CalculateTrajectoryFuller(t):
@@ -102,9 +130,9 @@ def CalculateTrajectoryFuller(t):
     #print("x2(T) = {}; y2(T) = {}".format(x2[-1], y2[-1]))
     #print("u1(0) = {}; u2(0) = {}".format(u1[0], u2[0]))
     
-    PlotDataTwoStacked(t, x1, x2, r'$x_{1}(t), x_{2}(t)$', 'tab:orange')
-    PlotDataTwoStacked(t, y1, y2, r'$y_{1}(t), y_{2}(t)$', 'tab:green')
-    PlotDataTwoStacked(t, u1, u2, r'$u_{1}(t), u_{2}(t)$', 'tab:red')
+    #PlotDataTwoStacked(t, x1, x2, r'$x_{1}(t), x_{2}(t)$', 'tab:orange')
+    #PlotDataTwoStacked(t, y1, y2, r'$y_{1}(t), y_{2}(t)$', 'tab:green')
+    #PlotDataTwoStacked(t, u1, u2, r'$u_{1}(t), u_{2}(t)$', 'tab:red')
     #PlotData(u1, u2, len(u1))
 
     return x1, y1, x2, y2
